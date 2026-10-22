@@ -23,15 +23,15 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
     setTimeout(() => setCopied(null), 1500)
   }
 
-  // Exact Syllabus Modules 1 to 6 Alignment
+  // Compiler Stages Pipeline
   const tabs = [
     { id: 0, name: 'Overview' },
-    { id: 1, name: 'M1: Lexical (LEX)' },
-    { id: 2, name: 'M2: Syntax & Parsing' },
-    { id: 3, name: 'M3: SDT & Runtime' },
-    { id: 4, name: 'M4: Intermediate Code' },
-    { id: 5, name: 'M5: Optimization' },
-    { id: 6, name: 'M6: Code Generation' },
+    { id: 1, name: 'Lexical Analysis' },
+    { id: 2, name: 'Syntax Analysis' },
+    { id: 3, name: 'Semantic & Runtime' },
+    { id: 4, name: 'Intermediate Code' },
+    { id: 5, name: 'Optimization' },
+    { id: 6, name: 'Code Generation' },
     { id: 7, name: 'Console Log' },
   ]
 
@@ -76,56 +76,56 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 0: SYLLABUS OVERVIEW */}
+        {/* TAB 0: OVERVIEW */}
         {activeTab === 0 && (
           <div className="flex flex-col gap-3 font-mono text-xs">
             <div className="p-3 rounded border border-zinc-800 bg-zinc-900/30">
               <span className="text-zinc-400 font-bold block mb-1">
-                Syllabus Coursework Alignment (Modules I to VI):
+                Compiler Pipeline Architecture:
               </span>
               <p className="text-zinc-500 text-[11px] leading-relaxed">
-                This compiler implements the complete 6-module curriculum: Lexical analysis (M1),
-                Top-down LL parsing with CFG (M2), Syntax Directed Definitions & Runtime Storage (M3),
-                Three-Address Code & SSA form (M4), Basic Block optimization & CSE (M5), and simple code
-                generator with getReg() & register descriptors (M6).
+                Complete multi-pass arithmetic compiler engine featuring lexical analysis with regular expressions,
+                top-down recursive descent parsing with operator precedence CFG, syntax-directed attribute definitions,
+                three-address code & SSA generation, basic block machine-independent optimizations, and target RISC code generation
+                with getReg() allocation.
               </p>
             </div>
 
             {/* Metric Boxes */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
-                <span className="text-[10px] text-zinc-500 block">Module 1</span>
+                <span className="text-[10px] text-zinc-500 block">Lexical Phase</span>
                 <span className="text-base font-bold text-zinc-100">{result.tokens.length - 1} Tokens</span>
               </div>
               <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
-                <span className="text-[10px] text-zinc-500 block">Module 2</span>
+                <span className="text-[10px] text-zinc-500 block">Syntax Phase</span>
                 <span className="text-base font-bold text-zinc-100">LL Parse Tree</span>
               </div>
               <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
-                <span className="text-[10px] text-zinc-500 block">Module 3</span>
+                <span className="text-[10px] text-zinc-500 block">Semantic Phase</span>
                 <span className="text-base font-bold text-zinc-100">{result.sddRules.length} SDD Rules</span>
               </div>
               <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
-                <span className="text-[10px] text-zinc-500 block">Module 4</span>
+                <span className="text-[10px] text-zinc-500 block">IR Phase</span>
                 <span className="text-base font-bold text-zinc-100">{result.rawTAC.length} TAC & SSA</span>
               </div>
               <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
-                <span className="text-[10px] text-zinc-500 block">Module 5</span>
+                <span className="text-[10px] text-zinc-500 block">Optimizer</span>
                 <span className="text-base font-bold text-zinc-100">-{result.reductionPercentage}% Opt</span>
               </div>
               <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
-                <span className="text-[10px] text-zinc-500 block">Module 6</span>
+                <span className="text-[10px] text-zinc-500 block">Target Code</span>
                 <span className="text-base font-bold text-zinc-100">
                   {result.assembly.filter((a) => !a.instruction.startsWith('.')).length} RISC Asm
                 </span>
               </div>
             </div>
 
-            {/* Syllabus Module Cards */}
+            {/* Architecture Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
               <div className="p-3 rounded border border-zinc-800 bg-zinc-900/20">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-zinc-200">Module 1 & 2: Frontend</span>
+                  <span className="font-bold text-zinc-200">Frontend: Lexical & Parsing</span>
                   <button onClick={() => onTabChange(2)} className="text-[11px] text-zinc-400 hover:text-white">
                     Parse Tree →
                   </button>
@@ -139,7 +139,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
 
               <div className="p-3 rounded border border-zinc-800 bg-zinc-900/20">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-zinc-200">Module 3: SDD & Runtime</span>
+                  <span className="font-bold text-zinc-200">Semantic & Runtime Layout</span>
                   <button onClick={() => onTabChange(3)} className="text-[11px] text-zinc-400 hover:text-white">
                     SDD & Symbols →
                   </button>
@@ -153,7 +153,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
 
               <div className="p-3 rounded border border-zinc-800 bg-zinc-900/20">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-zinc-200">Module 4 & 5: IR & Optimization</span>
+                  <span className="font-bold text-zinc-200">IR & Machine-Independent Optimization</span>
                   <button onClick={() => onTabChange(4)} className="text-[11px] text-zinc-400 hover:text-white">
                     TAC & Opt →
                   </button>
@@ -167,7 +167,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
 
               <div className="p-3 rounded border border-zinc-800 bg-zinc-900/20">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-zinc-200">Module 6: Code Generation</span>
+                  <span className="font-bold text-zinc-200">Backend: Code Generation</span>
                   <button onClick={() => onTabChange(6)} className="text-[11px] text-zinc-400 hover:text-white">
                     Assembly →
                   </button>
@@ -182,7 +182,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 1: MODULE 1 - LEXICAL ANALYSIS */}
+        {/* TAB 1: LEXICAL ANALYSIS */}
         {activeTab === 1 && (
           <div className="flex flex-col gap-2.5 font-mono text-xs">
             <div className="flex items-center justify-between gap-2">
@@ -194,7 +194,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
                 className="w-48 px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
               />
               <span className="text-[11px] text-zinc-500">
-                Module 1: {result.tokens.length} tokens recognized
+                Total: {result.tokens.length} tokens recognized
               </span>
             </div>
 
@@ -243,13 +243,13 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 2: MODULE 2 - SYNTAX ANALYSIS & PARSER */}
+        {/* TAB 2: SYNTAX ANALYSIS & PARSER */}
         {activeTab === 2 && (
           <div className="flex flex-col gap-3 font-mono text-xs">
-            {/* Operator Precedence Table (Module 2 Topic) */}
+            {/* Operator Precedence Table */}
             <div className="rounded border border-zinc-800 p-2.5 bg-zinc-900/30">
               <span className="text-zinc-300 font-bold block mb-1">
-                Module 2 Operator Precedence & Associativity:
+                Operator Precedence & Associativity:
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-zinc-400">
                 <div>1. Parentheses: <span className="text-white">( )</span> (Highest)</div>
@@ -268,7 +268,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 3: MODULE 3 - SDT & RUNTIME STORAGE */}
+        {/* TAB 3: SDT & RUNTIME STORAGE */}
         {activeTab === 3 && (
           <div className="flex flex-col gap-3 font-mono text-xs">
             {/* Syntax Directed Definition (SDD) Table */}
@@ -329,7 +329,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 4: MODULE 4 - INTERMEDIATE CODE GENERATION */}
+        {/* TAB 4: INTERMEDIATE CODE GENERATION */}
         {activeTab === 4 && (
           <div className="flex flex-col gap-3 font-mono text-xs">
             {/* Postfix */}
@@ -373,7 +373,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
               </table>
             </div>
 
-            {/* Static Single Assignment (SSA) Form (Module 4 topic) */}
+            {/* Static Single Assignment (SSA) Form */}
             <div className="rounded border border-zinc-800 overflow-hidden">
               <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold">
                 Static Single Assignment (SSA) Form:
@@ -429,7 +429,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 5: MODULE 5 - CODE OPTIMIZATION & BASIC BLOCKS */}
+        {/* TAB 5: CODE OPTIMIZATION & BASIC BLOCKS */}
         {activeTab === 5 && (
           <div className="flex flex-col gap-3 font-mono text-xs">
             <div className="p-3 rounded border border-zinc-800 bg-zinc-900/30 flex items-center justify-between">
@@ -444,7 +444,7 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
               </span>
             </div>
 
-            {/* Basic Blocks & Leader Partition (Module 5 Topic) */}
+            {/* Basic Blocks & Leader Partition */}
             <div className="rounded border border-zinc-800 overflow-hidden">
               <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold">
                 Basic Block Partitioning (Leader Identification):
@@ -521,10 +521,10 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 6: MODULE 6 - CODE GENERATION & DESCRIPTORS */}
+        {/* TAB 6: CODE GENERATION & DESCRIPTORS */}
         {activeTab === 6 && (
           <div className="flex flex-col gap-3 font-mono text-xs">
-            {/* getReg() Algorithm Trace (Module 6 topic) */}
+            {/* getReg() Algorithm Trace */}
             <div className="rounded border border-zinc-800 overflow-hidden">
               <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold">
                 getReg() Function Execution Trace:

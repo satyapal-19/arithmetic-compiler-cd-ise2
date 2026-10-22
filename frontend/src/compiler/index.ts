@@ -25,8 +25,8 @@ export class ArithmeticCompiler {
     appendLine('==============================================================================')
     appendLine(`Source Code Input:\n  "${sourceCode}"`)
 
-    // MODULE 1: LEXICAL ANALYSIS
-    appendLine('\n>>> [MODULE 1] Running Lexical Analysis (Scanner)...')
+    // Phase 1: Lexical Analysis
+    appendLine('\n>>> [Phase 1/6] Running Lexical Analysis (Scanner)...')
     const lexer = new LexicalAnalyzer(sourceCode)
     const { tokens, log: lexLog } = lexer.tokenize()
     appendLine(` DONE. (${tokens.length} tokens generated)`)
@@ -68,8 +68,8 @@ export class ArithmeticCompiler {
       }
     }
 
-    // MODULE 2: SYNTAX ANALYSIS
-    appendLine('\n>>> [MODULE 2] Running Syntax Analysis (Top-Down Recursive Descent Parser)...')
+    // Phase 2: Syntax Analysis
+    appendLine('\n>>> [Phase 2/6] Running Syntax Analysis (Top-Down Recursive Descent Parser)...')
     const parser = new Parser(tokens)
     const astRoot = parser.parseProgram()
 
@@ -111,8 +111,8 @@ export class ArithmeticCompiler {
     const asciiTree = Parser.generateASCIITree(astRoot)
     appendLine(' DONE. (Abstract Syntax Tree built successfully)')
 
-    // MODULE 3: SYNTAX DIRECTED TRANSLATION & RUNTIME
-    appendLine('\n>>> [MODULE 3] Running Syntax Directed Definition (SDD) & Storage Allocation...')
+    // Phase 3: Semantic Analysis & Runtime
+    appendLine('\n>>> [Phase 3/6] Running Syntax Directed Definition (SDD) & Storage Allocation...')
     const semanticAnalyzer = new SemanticAnalyzer()
     const semanticOk = semanticAnalyzer.analyze(astRoot)
     const diagnostics = semanticAnalyzer.getDiagnostics()
@@ -156,8 +156,8 @@ export class ArithmeticCompiler {
       }
     }
 
-    // MODULE 4: INTERMEDIATE CODE GENERATION
-    appendLine('\n>>> [MODULE 4] Running Intermediate Code Generation (TAC, Quadruples, Triples, SSA)...')
+    // Phase 4: Intermediate Code Generation
+    appendLine('\n>>> [Phase 4/6] Running Intermediate Code Generation (TAC, Quadruples, Triples, SSA)...')
     const icg = new IntermediateCodeGenerator()
     icg.generate(astRoot)
     const rawTAC = icg.getTAC()
@@ -197,8 +197,8 @@ export class ArithmeticCompiler {
     })
     appendLine(` DONE. (${rawTAC.length} TAC instructions emitted)`)
 
-    // MODULE 5: CODE OPTIMIZATION & BASIC BLOCKS
-    appendLine('\n>>> [MODULE 5] Running Code Optimization & Basic Block Partitioning...')
+    // Phase 5: Code Optimization
+    appendLine('\n>>> [Phase 5/6] Running Code Optimization & Basic Block Partitioning...')
     const optimizer = new CodeOptimizer()
     const { optimized: optimizedTAC, records: optimizations, reduction } = optimizer.optimize(rawTAC)
 
@@ -214,8 +214,8 @@ export class ArithmeticCompiler {
     ]
     appendLine(` DONE. (${rawTAC.length} -> ${optimizedTAC.length} instructions, ${reduction}% reduction)`)
 
-    // MODULE 6: TARGET CODE GENERATION
-    appendLine('\n>>> [MODULE 6] Running Target Code Generation (getReg Algorithm, Register & Address Descriptors)...')
+    // Phase 6: Target Code Generation
+    appendLine('\n>>> [Phase 6/6] Running Target Code Generation (getReg Algorithm, Register & Address Descriptors)...')
     const codegen = new TargetCodeGenerator()
     const { assembly, registers } = codegen.generate(optimizedTAC, symbolTable)
 

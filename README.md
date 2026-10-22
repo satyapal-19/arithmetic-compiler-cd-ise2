@@ -1,6 +1,6 @@
 # Arithmetic Compiler Design - College Lab ISE 2
 
-A complete, educational, and fully transparent **Arithmetic Compiler** implemented in modern **C++ (C++11/C++14)** for Compiler Design (CD) Coursework / In-Semester Evaluation 2 (ISE 2).
+A complete, educational, and fully transparent **Arithmetic Compiler** implemented in modern **C++ (C++11/C++14)** for Compiler Design (CD) In-Semester Evaluation 2 (ISE 2).
 
 This project implements **all 6 canonical phases of compiler design** and prints a comprehensive, step-by-step breakdown of each phase's internal operations, data structures, and console visualizations.
 

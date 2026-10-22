@@ -93,7 +93,7 @@ export class SemanticAnalyzer {
         }
         node.inferredType = varType
 
-        // Module 3: SDD Semantic Rule
+        // SDD Semantic Rule
         this.sddRules.push({
           id: this.sddCounter++,
           production: `S -> id = E ;`,
@@ -137,7 +137,7 @@ export class SemanticAnalyzer {
           `Verified Binary Op '${node.op}': (${lType} ${node.op} ${rType}) -> Result type: ${node.inferredType}`
         )
 
-        // Module 3: SDD S-attributed Rule
+        // SDD S-attributed Rule
         this.sddRules.push({
           id: this.sddCounter++,
           production: `E -> E1 ${node.op} T`,

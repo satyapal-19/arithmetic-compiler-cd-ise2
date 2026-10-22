@@ -164,7 +164,7 @@ export const ASTVisualizer: React.FC<ASTVisualizerProps> = ({
       ) : (
         <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3.5 space-y-2">
           <div className="text-xs text-zinc-300 font-bold">
-            Module 2: Top-Down Recursive Descent Derivation Steps:
+            Top-Down Recursive Descent Derivation Steps:
           </div>
           <div className="flex flex-col gap-1 font-mono text-xs">
             {derivationLog.map((rule, idx) => (
