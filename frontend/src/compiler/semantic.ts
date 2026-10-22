@@ -1,16 +1,20 @@
-import { ASTNode, ASTNodeType, SemanticDiagnostic, SymbolEntry } from './types'
+import { ASTNode, ASTNodeType, SDDRule, SemanticDiagnostic, SymbolEntry } from './types'
 
 export class SemanticAnalyzer {
   private symbolTable = new Map<string, SymbolEntry>()
   private diagnostics: SemanticDiagnostic[] = []
   private analysisLog: string[] = []
+  private sddRules: SDDRule[] = []
   private currentOffset = 0
+  private sddCounter = 1
 
   public clear(): void {
     this.symbolTable.clear()
     this.diagnostics = []
     this.analysisLog = []
+    this.sddRules = []
     this.currentOffset = 0
+    this.sddCounter = 1
   }
 
   public getDiagnostics(): SemanticDiagnostic[] {
@@ -25,13 +29,17 @@ export class SemanticAnalyzer {
     return Array.from(this.symbolTable.values())
   }
 
+  public getSDDRules(): SDDRule[] {
+    return this.sddRules
+  }
+
   public hasFatalErrors(): boolean {
     return this.diagnostics.some((d) => d.level === 'ERROR')
   }
 
   public analyze(root: ASTNode | null): boolean {
     this.clear()
-    this.analysisLog.push('Starting Semantic Analysis Pass...')
+    this.analysisLog.push('Starting Semantic Analysis & SDT Attribute Evaluation...')
 
     if (!root) return false
     this.analyzeNode(root)
@@ -72,6 +80,7 @@ export class SemanticAnalyzer {
             isInitialized: true,
             memoryOffset: this.currentOffset,
             lineDeclared: 1,
+            scope: 'Global',
           }
           this.currentOffset += 4
           this.symbolTable.set(varName, entry)
@@ -83,6 +92,14 @@ export class SemanticAnalyzer {
           this.analysisLog.push(`Updated variable '${varName}' as initialized in Symbol Table.`)
         }
         node.inferredType = varType
+
+        // Module 3: SDD Semantic Rule
+        this.sddRules.push({
+          id: this.sddCounter++,
+          production: `S -> id = E ;`,
+          semanticAction: `lookup(id.name).val = E.val; S.type = void`,
+          synthesizedAttribute: `S.val = ${varName} (${varType})`,
+        })
         break
       }
 
@@ -119,6 +136,14 @@ export class SemanticAnalyzer {
         this.analysisLog.push(
           `Verified Binary Op '${node.op}': (${lType} ${node.op} ${rType}) -> Result type: ${node.inferredType}`
         )
+
+        // Module 3: SDD S-attributed Rule
+        this.sddRules.push({
+          id: this.sddCounter++,
+          production: `E -> E1 ${node.op} T`,
+          semanticAction: `E.val = E1.val ${node.op} T.val; E.type = checkType(E1.type, T.type)`,
+          synthesizedAttribute: `E.type = ${node.inferredType}`,
+        })
         break
       }
 
@@ -126,6 +151,13 @@ export class SemanticAnalyzer {
         this.analyzeNode(node.right || null)
         node.inferredType = node.right?.inferredType || 'int'
         this.analysisLog.push(`Verified Unary Op '${node.op}' on type ${node.inferredType}`)
+
+        this.sddRules.push({
+          id: this.sddCounter++,
+          production: `F -> ${node.op} F1`,
+          semanticAction: `F.val = -F1.val; F.type = F1.type`,
+          synthesizedAttribute: `F.type = ${node.inferredType}`,
+        })
         break
 
       case ASTNodeType.VARIABLE: {
@@ -139,6 +171,7 @@ export class SemanticAnalyzer {
             isInitialized: true,
             memoryOffset: this.currentOffset,
             lineDeclared: 1,
+            scope: 'Global',
           }
           this.currentOffset += 4
           this.symbolTable.set(vName, entry)
@@ -148,11 +181,23 @@ export class SemanticAnalyzer {
           node.inferredType = existing.dataType
           this.analysisLog.push(`Looked up variable '${vName}' in Symbol Table. Type: ${existing.dataType}`)
         }
+
+        this.sddRules.push({
+          id: this.sddCounter++,
+          production: `F -> id`,
+          semanticAction: `F.val = lookup(id.entry); F.type = id.type`,
+          synthesizedAttribute: `F.val = ${vName}`,
+        })
         break
       }
 
       case ASTNodeType.NUM_LITERAL:
-        // already inferred
+        this.sddRules.push({
+          id: this.sddCounter++,
+          production: `F -> num`,
+          semanticAction: `F.val = num.lexval; F.type = ${node.inferredType || 'int'}`,
+          synthesizedAttribute: `F.val = ${node.rawValue}`,
+        })
         break
     }
   }

@@ -1484,9 +1484,9 @@ public:
         symbolTable.clear();
 
         // ---------------------------------------------------------
-        // STAGE 1: LEXICAL ANALYSIS
+        // MODULE 1: LEXICAL ANALYSIS
         // ---------------------------------------------------------
-        cout << "\n>>> [PHASE 1/6] Running Lexical Analysis (Scanner)...";
+        cout << "\n>>> [MODULE 1/6] Running Lexical Analysis (Scanner & Token Recognition)...";
         LexicalAnalyzer lexer(sourceCode);
         vector<Token> tokens = lexer.tokenize();
         cout << " DONE. (" << tokens.size() << " tokens generated)\n";
@@ -1505,9 +1505,9 @@ public:
         }
 
         // ---------------------------------------------------------
-        // STAGE 2: SYNTAX ANALYSIS
+        // MODULE 2: SYNTAX ANALYSIS
         // ---------------------------------------------------------
-        cout << "\n>>> [PHASE 2/6] Running Syntax Analysis (Recursive Descent Parser)...";
+        cout << "\n>>> [MODULE 2/6] Running Syntax Analysis (Recursive Descent Parser & CFG)...";
         Parser parser(tokens);
         unique_ptr<ASTNode> astRoot(parser.parseProgram());
 
@@ -1520,16 +1520,16 @@ public:
 
         if (verbose) {
             cout << "\n+----------------------------------------------------------------------------+\n";
-            cout << "|               STAGE 2: SYNTAX ANALYSIS - ABSTRACT SYNTAX TREE              |\n";
+            cout << "|          MODULE 2: SYNTAX ANALYSIS - ABSTRACT SYNTAX TREE (AST)            |\n";
             cout << "+----------------------------------------------------------------------------+\n";
             Parser::printAST(astRoot.get());
             cout << "+----------------------------------------------------------------------------+\n";
         }
 
         // ---------------------------------------------------------
-        // STAGE 3: SEMANTIC ANALYSIS
+        // MODULE 3: SYNTAX DIRECTED TRANSLATION & RUNTIME
         // ---------------------------------------------------------
-        cout << "\n>>> [PHASE 3/6] Running Semantic Analysis & Type Checking...";
+        cout << "\n>>> [MODULE 3/6] Running SDD Semantic Rules & Runtime Storage Allocation...";
         SemanticAnalyzer semanticAnalyzer(symbolTable);
         bool semanticSuccess = semanticAnalyzer.analyze(astRoot.get());
 
@@ -1544,9 +1544,9 @@ public:
         }
 
         // ---------------------------------------------------------
-        // STAGE 4: INTERMEDIATE CODE GENERATION
+        // MODULE 4: INTERMEDIATE CODE GENERATION
         // ---------------------------------------------------------
-        cout << "\n>>> [PHASE 4/6] Running Intermediate Code Generation (ICG)...";
+        cout << "\n>>> [MODULE 4/6] Running Intermediate Code Generation (TAC & Quadruples)...";
         IntermediateCodeGenerator icg;
         icg.generate(astRoot.get());
         vector<TACInstruction> rawTac = icg.getInstructions();
@@ -1557,9 +1557,9 @@ public:
         }
 
         // ---------------------------------------------------------
-        // STAGE 5: CODE OPTIMIZATION
+        // MODULE 5: CODE OPTIMIZATION
         // ---------------------------------------------------------
-        cout << "\n>>> [PHASE 5/6] Running Code Optimization Passes...";
+        cout << "\n>>> [MODULE 5/6] Running Code Optimization (Basic Blocks, Folding, CSE)...";
         CodeOptimizer optimizer;
         vector<TACInstruction> optimizedTac = optimizer.optimize(rawTac);
         cout << " DONE. (" << rawTac.size() << " -> " << optimizedTac.size() << " instructions)\n";
@@ -1569,9 +1569,9 @@ public:
         }
 
         // ---------------------------------------------------------
-        // STAGE 6: TARGET CODE GENERATION
+        // MODULE 6: TARGET CODE GENERATION
         // ---------------------------------------------------------
-        cout << "\n>>> [PHASE 6/6] Running Target Code Generation (Virtual CPU Assembly)...";
+        cout << "\n>>> [MODULE 6/6] Running Target Code Generation (getReg, Descriptors, RISC Assembly)...";
         TargetCodeGenerator codegen;
         codegen.generateCode(optimizedTac, symbolTable);
         cout << " DONE.\n";

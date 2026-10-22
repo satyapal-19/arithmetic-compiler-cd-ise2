@@ -88,6 +88,7 @@ export class LexicalAnalyzer {
           type,
           typeName: type,
           lexeme,
+          pattern: type === TokenType.KEYWORD_INT ? 'int' : type === TokenType.KEYWORD_FLOAT ? 'float' : '[a-zA-Z_][a-zA-Z0-9_]*',
           line: startLine,
           column: startCol,
         })
@@ -113,6 +114,7 @@ export class LexicalAnalyzer {
           type,
           typeName: type,
           lexeme,
+          pattern: isFloat ? '[0-9]+\\.[0-9]+' : '[0-9]+',
           line: startLine,
           column: startCol,
         })
@@ -122,54 +124,67 @@ export class LexicalAnalyzer {
         const op = this.advance()
         let type: TokenType
         const lexeme = op
+        let pattern = '\\' + op
 
         switch (op) {
           case '+':
             type = TokenType.OP_PLUS
+            pattern = '\\+'
             this.scanLog.push("Found operator '+' (Addition)")
             break
           case '-':
             type = TokenType.OP_MINUS
+            pattern = '\\-'
             this.scanLog.push("Found operator '-' (Subtraction)")
             break
           case '*':
             type = TokenType.OP_MUL
+            pattern = '\\*'
             this.scanLog.push("Found operator '*' (Multiplication)")
             break
           case '/':
             type = TokenType.OP_DIV
+            pattern = '/'
             this.scanLog.push("Found operator '/' (Division)")
             break
           case '%':
             type = TokenType.OP_MOD
+            pattern = '%'
             this.scanLog.push("Found operator '%' (Modulo)")
             break
           case '^':
             type = TokenType.OP_POW
+            pattern = '\\^'
             this.scanLog.push("Found operator '^' (Exponentiation)")
             break
           case '=':
             type = TokenType.OP_ASSIGN
+            pattern = '='
             this.scanLog.push("Found operator '=' (Assignment)")
             break
           case '(':
             type = TokenType.LPAREN
+            pattern = '\\('
             this.scanLog.push("Found delimiter '(' (Left Paren)")
             break
           case ')':
             type = TokenType.RPAREN
+            pattern = '\\)'
             this.scanLog.push("Found delimiter ')' (Right Paren)")
             break
           case ';':
             type = TokenType.SEMICOLON
+            pattern = ';'
             this.scanLog.push("Found delimiter ';' (Semicolon)")
             break
           case ',':
             type = TokenType.COMMA
+            pattern = ','
             this.scanLog.push("Found delimiter ',' (Comma)")
             break
           default:
             type = TokenType.UNKNOWN
+            pattern = '.'
             this.scanLog.push(`ERROR: Unknown character '${lexeme}' at line ${startLine}`)
             break
         }
@@ -179,6 +194,7 @@ export class LexicalAnalyzer {
           type,
           typeName: type,
           lexeme,
+          pattern,
           line: startLine,
           column: startCol,
         })
@@ -190,6 +206,7 @@ export class LexicalAnalyzer {
       type: TokenType.END_OF_FILE,
       typeName: 'END_OF_FILE',
       lexeme: '$',
+      pattern: '\\$',
       line: this.currentLine,
       column: this.currentColumn,
     })
