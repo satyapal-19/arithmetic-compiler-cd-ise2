@@ -1,20 +1,5 @@
 import React, { useState } from 'react'
-import {
-  FileText,
-  Network,
-  ShieldCheck,
-  Binary,
-  Zap,
-  Cpu,
-  Terminal,
-  Copy,
-  Check,
-  AlertTriangle,
-  Layers,
-  ArrowRight,
-  TrendingDown,
-  Info,
-} from 'lucide-react'
+import { Copy, Check } from 'lucide-react'
 import { CompilerResult } from '../compiler/types'
 import { ASTVisualizer } from './ASTVisualizer'
 
@@ -35,242 +20,134 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
   const copyText = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
     setCopied(id)
-    setTimeout(() => setCopied(null), 2000)
+    setTimeout(() => setCopied(null), 1500)
   }
 
   const tabs = [
-    { id: 0, name: 'Overview', icon: Layers },
-    { id: 1, name: '1. Tokens', icon: FileText },
-    { id: 2, name: '2. Syntax (AST)', icon: Network },
-    { id: 3, name: '3. Semantics & Symbols', icon: ShieldCheck },
-    { id: 4, name: '4. ICG (TAC)', icon: Binary },
-    { id: 5, name: '5. Optimization', icon: Zap },
-    { id: 6, name: '6. Target Assembly', icon: Cpu },
-    { id: 7, name: 'Terminal Output', icon: Terminal },
+    { id: 0, name: 'Overview' },
+    { id: 1, name: '1. Tokens' },
+    { id: 2, name: '2. AST Tree' },
+    { id: 3, name: '3. Symbols' },
+    { id: 4, name: '4. Three-Address Code' },
+    { id: 5, name: '5. Optimization' },
+    { id: 6, name: '6. Assembly' },
+    { id: 7, name: 'Console Log' },
   ]
 
   if (!result) {
     return (
-      <div className="h-full rounded-xl border border-slate-800 bg-slate-900/60 p-8 flex flex-col items-center justify-center text-center">
-        <div className="h-16 w-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4">
-          <Cpu className="h-8 w-8 animate-pulse" />
+      <div className="h-full rounded-lg border border-zinc-800 bg-zinc-900/30 p-8 flex flex-col items-center justify-center text-center">
+        <div className="text-zinc-500 font-mono text-xs">
+          Press "Run Compiler" or Ctrl + Enter to compile.
         </div>
-        <h3 className="text-base font-bold text-white mb-1">Compiler Ready</h3>
-        <p className="text-xs text-slate-400 max-w-sm mb-4">
-          Click <strong>"Compile Expression"</strong> or press{' '}
-          <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
-            Ctrl + Enter
-          </kbd>{' '}
-          to run all 6 compiler design stages.
-        </p>
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl flex flex-col h-full overflow-hidden">
-      {/* Top Tab Bar */}
-      <div className="flex items-center gap-1 overflow-x-auto border-b border-slate-800 bg-slate-950/70 p-1.5 text-xs">
+    <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 flex flex-col h-full overflow-hidden">
+      {/* Top Tab Bar - Dual Color Minimalist */}
+      <div className="flex items-center gap-1 overflow-x-auto border-b border-zinc-800 bg-zinc-950 px-2 py-1.5 text-xs">
         {tabs.map((t) => {
-          const Icon = t.icon
           const isSelected = activeTab === t.id
           return (
             <button
               key={t.id}
               onClick={() => onTabChange(t.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded font-mono text-xs transition whitespace-nowrap border ${
                 isSelected
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-zinc-100 text-zinc-950 border-zinc-100 font-semibold'
+                  : 'bg-transparent text-zinc-400 border-transparent hover:text-zinc-200 hover:bg-zinc-900'
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
-              <span>{t.name}</span>
+              {t.name}
             </button>
           )
         })}
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        {/* Error or Warnings Banner */}
-        {result.diagnostics.length > 0 && (
-          <div className="mb-4 flex flex-col gap-1.5">
-            {result.diagnostics.map((d, i) => (
-              <div
-                key={i}
-                className={`flex items-start gap-2 p-3 rounded-lg border text-xs ${
-                  d.level === 'ERROR'
-                    ? 'bg-rose-950/40 border-rose-600/40 text-rose-300'
-                    : 'bg-amber-950/40 border-amber-600/40 text-amber-300'
-                }`}
-              >
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                <div className="flex-1 font-medium">{d.message}</div>
-              </div>
-            ))}
+      <div className="flex-1 p-3.5 overflow-y-auto bg-zinc-950">
+        {/* Only show fatal error if compilation failed */}
+        {!result.success && result.errorMessage && (
+          <div className="mb-3 p-3 rounded border border-zinc-700 bg-zinc-900 text-xs text-zinc-100 font-mono flex items-center justify-between">
+            <span>[Error] {result.errorMessage}</span>
           </div>
         )}
 
         {/* TAB 0: OVERVIEW */}
         {activeTab === 0 && (
-          <div className="flex flex-col gap-4">
-            {/* Quick Summary Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[11px] text-slate-500 font-medium">Stage 1: Tokens</span>
-                <div className="text-xl font-bold text-cyan-400 mt-1">
-                  {result.tokens.length - 1}
-                </div>
-                <span className="text-[10px] text-slate-500">Atomic lexemes</span>
+          <div className="flex flex-col gap-3 font-mono text-xs">
+            {/* Metric Boxes */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+              <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
+                <span className="text-[10px] text-zinc-500 block">Tokens</span>
+                <span className="text-base font-bold text-zinc-100">{result.tokens.length - 1}</span>
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[11px] text-slate-500 font-medium">Stage 2: Syntax</span>
-                <div className="text-xl font-bold text-indigo-400 mt-1">AST Built</div>
-                <span className="text-[10px] text-slate-500">Recursive descent</span>
+              <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
+                <span className="text-[10px] text-zinc-500 block">AST Status</span>
+                <span className="text-base font-bold text-zinc-100">Valid</span>
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[11px] text-slate-500 font-medium">Stage 3: Symbols</span>
-                <div className="text-xl font-bold text-purple-400 mt-1">
-                  {result.symbolTable.length}
-                </div>
-                <span className="text-[10px] text-slate-500">Byte-addressed</span>
+              <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
+                <span className="text-[10px] text-zinc-500 block">Symbols</span>
+                <span className="text-base font-bold text-zinc-100">{result.symbolTable.length}</span>
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[11px] text-slate-500 font-medium">Stage 4: TAC</span>
-                <div className="text-xl font-bold text-amber-400 mt-1">
-                  {result.rawTAC.length}
-                </div>
-                <span className="text-[10px] text-slate-500">Quadruples & triples</span>
+              <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
+                <span className="text-[10px] text-zinc-500 block">Raw TAC</span>
+                <span className="text-base font-bold text-zinc-100">{result.rawTAC.length}</span>
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[11px] text-slate-500 font-medium">Stage 5: Optimized</span>
-                <div className="text-xl font-bold text-emerald-400 mt-1 flex items-center gap-1">
-                  <span>{result.optimizedTAC.length}</span>
-                  {result.reductionPercentage > 0 && (
-                    <span className="text-xs text-emerald-400 font-normal">
-                      (-{result.reductionPercentage}%)
-                    </span>
-                  )}
-                </div>
-                <span className="text-[10px] text-slate-500">Folding & CSE</span>
+              <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
+                <span className="text-[10px] text-zinc-500 block">Optimized TAC</span>
+                <span className="text-base font-bold text-zinc-100">
+                  {result.optimizedTAC.length} ({result.reductionPercentage}%)
+                </span>
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
-                <span className="text-[11px] text-slate-500 font-medium">Stage 6: Assembly</span>
-                <div className="text-xl font-bold text-rose-400 mt-1">
+              <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/40">
+                <span className="text-[10px] text-zinc-500 block">Assembly Lines</span>
+                <span className="text-base font-bold text-zinc-100">
                   {result.assembly.filter((a) => !a.instruction.startsWith('.')).length}
-                </div>
-                <span className="text-[10px] text-slate-500">32-bit RISC VM</span>
+                </span>
               </div>
             </div>
 
-            {/* Pipeline Step Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800">
+            {/* Stage Quick Views */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
+              <div className="p-3 rounded border border-zinc-800 bg-zinc-900/20">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <FileText className="h-4 w-4 text-cyan-400" />
-                    <span>Stage 1: Token Stream Sample</span>
-                  </h4>
-                  <button
-                    onClick={() => onTabChange(1)}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-                  >
-                    View All <ArrowRight className="h-3 w-3" />
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {result.tokens.slice(0, 10).map((t) => (
-                    <span
-                      key={t.id}
-                      className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-[11px] font-mono text-cyan-300"
-                    >
-                      {t.lexeme}
-                    </span>
-                  ))}
-                  {result.tokens.length > 10 && (
-                    <span className="text-xs text-slate-500 self-center">
-                      +{result.tokens.length - 10} more
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Binary className="h-4 w-4 text-amber-400" />
-                    <span>Stage 4: Three-Address Code Preview</span>
-                  </h4>
+                  <span className="font-semibold text-zinc-200">Three-Address Code:</span>
                   <button
                     onClick={() => onTabChange(4)}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                    className="text-[11px] text-zinc-400 hover:text-white"
                   >
-                    View All <ArrowRight className="h-3 w-3" />
+                    View All →
                   </button>
                 </div>
-                <div className="font-mono text-xs text-slate-300 space-y-1">
-                  {result.rawTAC.slice(0, 3).map((tac) => (
+                <div className="space-y-1 text-zinc-300">
+                  {result.rawTAC.slice(0, 4).map((tac) => (
                     <div key={tac.index} className="truncate">
-                      {tac.index}.{' '}
-                      <span className="text-amber-400">{tac.result}</span> ={' '}
-                      {tac.arg1} {tac.op !== '=' ? tac.op : ''} {tac.arg2}
+                      {tac.index}. {tac.result} = {tac.arg1} {tac.op !== '=' ? tac.op : ''} {tac.arg2}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800">
+              <div className="p-3 rounded border border-zinc-800 bg-zinc-900/20">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Zap className="h-4 w-4 text-emerald-400" />
-                    <span>Stage 5: Optimization Efficiency</span>
-                  </h4>
-                  <button
-                    onClick={() => onTabChange(5)}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-                  >
-                    View All <ArrowRight className="h-3 w-3" />
-                  </button>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl font-bold text-emerald-400 flex items-center gap-1">
-                    <TrendingDown className="h-5 w-5" />
-                    <span>{result.reductionPercentage}%</span>
-                  </div>
-                  <div className="text-xs text-slate-400 leading-tight">
-                    {result.optimizations.length} optimization pass(es) applied, reducing code from{' '}
-                    {result.rawTAC.length} to {result.optimizedTAC.length} instructions.
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Cpu className="h-4 w-4 text-rose-400" />
-                    <span>Stage 6: Virtual Target Assembly</span>
-                  </h4>
+                  <span className="font-semibold text-zinc-200">Target Assembly (RISC):</span>
                   <button
                     onClick={() => onTabChange(6)}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                    className="text-[11px] text-zinc-400 hover:text-white"
                   >
-                    View All <ArrowRight className="h-3 w-3" />
+                    View All →
                   </button>
                 </div>
-                <div className="font-mono text-xs text-slate-300 space-y-1">
+                <div className="space-y-1 text-zinc-300">
                   {result.assembly
                     .filter((a) => a.instruction && !a.instruction.startsWith('.'))
-                    .slice(0, 3)
+                    .slice(0, 4)
                     .map((a, i) => (
                       <div key={i} className="truncate">
-                        <span className="text-rose-400">{a.instruction.split(' ')[0]}</span>{' '}
-                        {a.instruction.substring(a.instruction.indexOf(' '))}
+                        {a.instruction}
                       </div>
                     ))}
                 </div>
@@ -279,34 +156,33 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 1: LEXICAL ANALYSIS */}
+        {/* TAB 1: TOKENS */}
         {activeTab === 1 && (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2.5 font-mono text-xs">
+            <div className="flex items-center justify-between gap-2">
               <input
                 type="text"
-                placeholder="Filter tokens by lexeme or type..."
+                placeholder="Search tokens..."
                 value={tokenSearch}
                 onChange={(e) => setTokenSearch(e.target.value)}
-                className="w-64 px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-48 px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
               />
-              <span className="text-xs text-slate-400">
-                Total {result.tokens.length} tokens recognized
+              <span className="text-[11px] text-zinc-500">
+                {result.tokens.length} tokens
               </span>
             </div>
 
-            <div className="rounded-xl border border-slate-800 overflow-hidden">
+            <div className="rounded border border-zinc-800 overflow-hidden">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-950/90 text-slate-400 font-semibold border-b border-slate-800">
+                <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
                   <tr>
-                    <th className="py-2.5 px-3">#</th>
-                    <th className="py-2.5 px-3">Token Type</th>
-                    <th className="py-2.5 px-3">Lexeme</th>
-                    <th className="py-2.5 px-3">Line</th>
-                    <th className="py-2.5 px-3">Column</th>
+                    <th className="py-2 px-3">#</th>
+                    <th className="py-2 px-3">Token Type</th>
+                    <th className="py-2 px-3">Lexeme</th>
+                    <th className="py-2 px-3">Line:Col</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 bg-slate-950/40 font-mono">
+                <tbody className="divide-y divide-zinc-800/80 bg-zinc-950">
                   {result.tokens
                     .filter(
                       (t) =>
@@ -314,34 +190,22 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
                         t.typeName.toLowerCase().includes(tokenSearch.toLowerCase())
                     )
                     .map((t) => (
-                      <tr key={t.id} className="hover:bg-slate-800/40 transition">
-                        <td className="py-2 px-3 text-slate-500">{t.id}</td>
-                        <td className="py-2 px-3 text-cyan-300">{t.typeName}</td>
-                        <td className="py-2 px-3 text-white font-bold">'{t.lexeme}'</td>
-                        <td className="py-2 px-3 text-slate-400">{t.line}</td>
-                        <td className="py-2 px-3 text-slate-400">{t.column}</td>
+                      <tr key={t.id} className="hover:bg-zinc-900/50">
+                        <td className="py-1.5 px-3 text-zinc-500">{t.id}</td>
+                        <td className="py-1.5 px-3 text-zinc-400">{t.typeName}</td>
+                        <td className="py-1.5 px-3 text-white font-bold">'{t.lexeme}'</td>
+                        <td className="py-1.5 px-3 text-zinc-500">
+                          {t.line}:{t.column}
+                        </td>
                       </tr>
                     ))}
                 </tbody>
               </table>
             </div>
-
-            {/* Lexical Log */}
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-              <div className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-                <Info className="h-3.5 w-3.5 text-cyan-400" />
-                <span>Scanner Transition Trace:</span>
-              </div>
-              <div className="max-h-40 overflow-y-auto space-y-1 font-mono text-[11px] text-slate-400">
-                {result.lexLog.map((log, i) => (
-                  <div key={i}>[SCAN] {log}</div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 
-        {/* TAB 2: SYNTAX ANALYSIS & AST */}
+        {/* TAB 2: AST */}
         {activeTab === 2 && (
           <ASTVisualizer
             root={result.astRoot}
@@ -350,125 +214,75 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           />
         )}
 
-        {/* TAB 3: SEMANTIC ANALYSIS & SYMBOL TABLE */}
+        {/* TAB 3: SYMBOLS */}
         {activeTab === 3 && (
-          <div className="flex flex-col gap-4">
-            {/* Symbol Table */}
-            <div className="rounded-xl border border-slate-800 overflow-hidden">
-              <div className="px-3.5 py-2.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-purple-400" />
-                  <span>Symbol Table Management</span>
-                </h4>
-                <span className="text-xs text-slate-500">
-                  {result.symbolTable.length} identifier(s)
-                </span>
+          <div className="flex flex-col gap-3 font-mono text-xs">
+            <div className="rounded border border-zinc-800 overflow-hidden">
+              <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold">
+                Symbol Table ({result.symbolTable.length} identifiers)
               </div>
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-950/90 text-slate-400 font-semibold border-b border-slate-800">
+                <thead className="bg-zinc-950 text-zinc-500 border-b border-zinc-800">
                   <tr>
-                    <th className="py-2.5 px-3">Identifier</th>
-                    <th className="py-2.5 px-3">Type</th>
-                    <th className="py-2.5 px-3">Memory Offset</th>
-                    <th className="py-2.5 px-3">Value</th>
-                    <th className="py-2.5 px-3">Initialized?</th>
+                    <th className="py-2 px-3">Name</th>
+                    <th className="py-2 px-3">Type</th>
+                    <th className="py-2 px-3">Memory Offset</th>
+                    <th className="py-2 px-3">Value</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 bg-slate-950/40 font-mono">
+                <tbody className="divide-y divide-zinc-800/80 bg-zinc-950 text-zinc-200">
                   {result.symbolTable.map((s) => (
-                    <tr key={s.name} className="hover:bg-slate-800/40 transition">
-                      <td className="py-2 px-3 text-purple-300 font-bold">{s.name}</td>
-                      <td className="py-2 px-3 text-slate-300">{s.dataType}</td>
-                      <td className="py-2 px-3 text-amber-400 font-bold">
-                        Byte {s.memoryOffset}
-                      </td>
-                      <td className="py-2 px-3 text-slate-300">
-                        {s.isInitialized ? s.value : 'N/A (undef)'}
-                      </td>
-                      <td className="py-2 px-3">
-                        <span
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-sans font-semibold ${
-                            s.isInitialized
-                              ? 'bg-emerald-500/20 text-emerald-300'
-                              : 'bg-amber-500/20 text-amber-300'
-                          }`}
-                        >
-                          {s.isInitialized ? 'YES' : 'NO'}
-                        </span>
-                      </td>
+                    <tr key={s.name} className="hover:bg-zinc-900/50">
+                      <td className="py-1.5 px-3 text-white font-bold">{s.name}</td>
+                      <td className="py-1.5 px-3 text-zinc-400">{s.dataType}</td>
+                      <td className="py-1.5 px-3 text-zinc-400">Byte {s.memoryOffset}</td>
+                      <td className="py-1.5 px-3">{s.value}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-            {/* Semantic Log */}
-            <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3">
-              <div className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-                <Info className="h-3.5 w-3.5 text-purple-400" />
-                <span>Semantic Checks Trace:</span>
-              </div>
-              <div className="max-h-48 overflow-y-auto space-y-1 font-mono text-[11px] text-slate-400">
-                {result.semanticLog.map((log, i) => (
-                  <div key={i}>[CHECK] {log}</div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
 
-        {/* TAB 4: INTERMEDIATE CODE GENERATION (ICG) */}
+        {/* TAB 4: TAC */}
         {activeTab === 4 && (
-          <div className="flex flex-col gap-4">
-            {/* Postfix / RPN */}
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex flex-col gap-3 font-mono text-xs">
+            {/* Postfix */}
+            <div className="p-2.5 rounded border border-zinc-800 bg-zinc-900/30 flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Postfix / Reverse Polish Notation (RPN):
-                </span>
-                <span className="font-mono text-sm font-bold text-amber-400">
-                  {result.postfix.join(' ')}
-                </span>
+                <span className="text-zinc-500 text-[10px] block">RPN / Postfix:</span>
+                <span className="text-white font-bold">{result.postfix.join(' ')}</span>
               </div>
               <button
                 onClick={() => copyText(result.postfix.join(' '), 'rpn')}
-                className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 transition"
+                className="px-2 py-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-[11px] border border-zinc-800"
               >
-                {copied === 'rpn' ? (
-                  <Check className="h-3 w-3 text-emerald-400" />
-                ) : (
-                  <Copy className="h-3 w-3" />
-                )}
-                <span>Copy RPN</span>
+                {copied === 'rpn' ? 'Copied' : 'Copy'}
               </button>
             </div>
 
-            {/* Three-Address Code (TAC) */}
-            <div className="rounded-xl border border-slate-800 overflow-hidden">
-              <div className="px-3.5 py-2.5 bg-slate-950/80 border-b border-slate-800">
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Binary className="h-4 w-4 text-amber-400" />
-                  <span>Three-Address Code (TAC) Instructions</span>
-                </h4>
+            {/* Three-Address Code Table */}
+            <div className="rounded border border-zinc-800 overflow-hidden">
+              <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold">
+                Three-Address Code (TAC)
               </div>
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-950/90 text-slate-400 font-semibold border-b border-slate-800">
+                <thead className="bg-zinc-950 text-zinc-500 border-b border-zinc-800">
                   <tr>
-                    <th className="py-2.5 px-3">#</th>
-                    <th className="py-2.5 px-3">Instruction</th>
-                    <th className="py-2.5 px-3">Architectural Explanation</th>
+                    <th className="py-2 px-3">#</th>
+                    <th className="py-2 px-3">Instruction</th>
+                    <th className="py-2 px-3">Meaning</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 bg-slate-950/40 font-mono">
+                <tbody className="divide-y divide-zinc-800/80 bg-zinc-950 text-zinc-200">
                   {result.rawTAC.map((tac) => (
-                    <tr key={tac.index} className="hover:bg-slate-800/40 transition">
-                      <td className="py-2 px-3 text-slate-500">{tac.index}</td>
-                      <td className="py-2 px-3 text-amber-300 font-bold">
+                    <tr key={tac.index} className="hover:bg-zinc-900/50">
+                      <td className="py-1.5 px-3 text-zinc-500">{tac.index}</td>
+                      <td className="py-1.5 px-3 text-white font-bold">
                         {tac.result} = {tac.arg1} {tac.op !== '=' ? tac.op : ''} {tac.arg2}
                       </td>
-                      <td className="py-2 px-3 text-slate-400 font-sans text-[11px]">
-                        {tac.comment}
-                      </td>
+                      <td className="py-1.5 px-3 text-zinc-400 text-[11px]">{tac.comment}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -476,30 +290,28 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
             </div>
 
             {/* Quadruples Table */}
-            <div className="rounded-xl border border-slate-800 overflow-hidden">
-              <div className="px-3.5 py-2.5 bg-slate-950/80 border-b border-slate-800">
-                <h4 className="text-xs font-bold text-white">
-                  Quadruples Table: (operator, arg1, arg2, result)
-                </h4>
+            <div className="rounded border border-zinc-800 overflow-hidden">
+              <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold">
+                Quadruples (op, arg1, arg2, result)
               </div>
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-950/90 text-slate-400 font-semibold border-b border-slate-800">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-950 text-zinc-500 border-b border-zinc-800">
                   <tr>
-                    <th className="py-2 px-3">Idx</th>
-                    <th className="py-2 px-3">Operator</th>
-                    <th className="py-2 px-3">Argument 1</th>
-                    <th className="py-2 px-3">Argument 2</th>
-                    <th className="py-2 px-3">Result</th>
+                    <th className="py-1.5 px-3">Idx</th>
+                    <th className="py-1.5 px-3">op</th>
+                    <th className="py-1.5 px-3">arg1</th>
+                    <th className="py-1.5 px-3">arg2</th>
+                    <th className="py-1.5 px-3">result</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 bg-slate-950/40">
+                <tbody className="divide-y divide-zinc-800/80 bg-zinc-950 text-zinc-300">
                   {result.quadruples.map((q) => (
-                    <tr key={q.index} className="hover:bg-slate-800/40 transition">
-                      <td className="py-2 px-3 text-slate-500">{q.index}</td>
-                      <td className="py-2 px-3 text-amber-400 font-bold">{q.op}</td>
-                      <td className="py-2 px-3 text-slate-300">{q.arg1}</td>
-                      <td className="py-2 px-3 text-slate-300">{q.arg2}</td>
-                      <td className="py-2 px-3 text-cyan-300 font-bold">{q.result}</td>
+                    <tr key={q.index} className="hover:bg-zinc-900/50">
+                      <td className="py-1.5 px-3 text-zinc-500">{q.index}</td>
+                      <td className="py-1.5 px-3 text-white font-bold">{q.op}</td>
+                      <td className="py-1.5 px-3">{q.arg1}</td>
+                      <td className="py-1.5 px-3">{q.arg2}</td>
+                      <td className="py-1.5 px-3 text-white">{q.result}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -508,79 +320,66 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 5: CODE OPTIMIZATION */}
+        {/* TAB 5: OPTIMIZATION */}
         {activeTab === 5 && (
-          <div className="flex flex-col gap-4">
-            {/* Efficiency Header */}
-            <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/40 to-teal-950/40 border border-emerald-500/30 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex flex-col gap-3 font-mono text-xs">
+            <div className="p-3 rounded border border-zinc-800 bg-zinc-900/30 flex items-center justify-between">
               <div>
-                <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wide">
-                  Optimization Results
-                </span>
-                <div className="text-2xl font-bold text-white mt-0.5">
-                  {result.reductionPercentage}% Code Reduction
-                </div>
-                <p className="text-xs text-slate-300 mt-1">
-                  Reduced from {result.rawTAC.length} to {result.optimizedTAC.length}{' '}
-                  instructions through machine-independent transformations.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 text-xs font-bold border border-emerald-500/40">
-                  {result.optimizations.length} Pass(es) Triggered
+                <span className="text-zinc-500 text-[10px] block">Optimization Result:</span>
+                <span className="text-white text-sm font-bold">
+                  {result.reductionPercentage}% Reduction ({result.rawTAC.length} → {result.optimizedTAC.length} instructions)
                 </span>
               </div>
+              <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 text-[11px] border border-zinc-700">
+                {result.optimizations.length} pass(es)
+              </span>
             </div>
 
-            {/* Optimization Passes Table */}
+            {/* Applied Passes */}
             {result.optimizations.length > 0 && (
-              <div className="rounded-xl border border-slate-800 overflow-hidden">
-                <div className="px-3.5 py-2.5 bg-slate-950/80 border-b border-slate-800">
-                  <h4 className="text-xs font-bold text-white">Applied Optimization Passes</h4>
+              <div className="rounded border border-zinc-800 overflow-hidden">
+                <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold">
+                  Applied Transformations
                 </div>
-                <div className="divide-y divide-slate-800 bg-slate-950/40 text-xs">
+                <div className="divide-y divide-zinc-800/80 bg-zinc-950">
                   {result.optimizations.map((opt) => (
-                    <div key={opt.id} className="p-3 flex flex-col gap-1">
+                    <div key={opt.id} className="p-2.5 flex flex-col gap-0.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-emerald-400">{opt.passName}</span>
-                        <span className="font-mono text-slate-400 text-[11px]">
-                          {opt.beforeCode} <ArrowRight className="inline h-3 w-3 mx-1 text-slate-500" />{' '}
-                          <strong className="text-white">{opt.afterCode}</strong>
+                        <span className="font-bold text-white">{opt.passName}</span>
+                        <span className="text-zinc-400">
+                          {opt.beforeCode} → <strong className="text-white">{opt.afterCode}</strong>
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">{opt.reason}</p>
+                      <span className="text-zinc-500 text-[11px]">{opt.reason}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Side-by-Side Comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="rounded-xl border border-slate-800 overflow-hidden">
-                <div className="px-3 py-2 bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-400">
-                  Before Optimization ({result.rawTAC.length} instrs)
+            {/* Side-by-Side Before and After */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              <div className="rounded border border-zinc-800 overflow-hidden">
+                <div className="px-3 py-1.5 bg-zinc-900 text-zinc-400 font-semibold text-[11px]">
+                  Before ({result.rawTAC.length})
                 </div>
-                <div className="p-3 font-mono text-xs text-slate-300 space-y-1.5 bg-slate-950/50">
+                <div className="p-2.5 space-y-1 bg-zinc-950 text-zinc-400">
                   {result.rawTAC.map((tac) => (
-                    <div key={tac.index} className="truncate">
-                      {tac.index}. {tac.result} = {tac.arg1} {tac.op !== '=' ? tac.op : ''}{' '}
-                      {tac.arg2}
+                    <div key={tac.index}>
+                      {tac.index}. {tac.result} = {tac.arg1} {tac.op !== '=' ? tac.op : ''} {tac.arg2}
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-emerald-900/50 overflow-hidden">
-                <div className="px-3 py-2 bg-emerald-950/60 border-b border-emerald-900/60 text-xs font-bold text-emerald-400">
-                  After Optimization ({result.optimizedTAC.length} instrs)
+              <div className="rounded border border-zinc-700 overflow-hidden">
+                <div className="px-3 py-1.5 bg-zinc-900 text-white font-semibold text-[11px]">
+                  After ({result.optimizedTAC.length})
                 </div>
-                <div className="p-3 font-mono text-xs text-emerald-300 space-y-1.5 bg-emerald-950/20">
+                <div className="p-2.5 space-y-1 bg-zinc-950 text-white font-medium">
                   {result.optimizedTAC.map((tac) => (
-                    <div key={tac.index} className="truncate">
-                      {tac.index}. {tac.result} = {tac.arg1} {tac.op !== '=' ? tac.op : ''}{' '}
-                      {tac.arg2}
+                    <div key={tac.index}>
+                      {tac.index}. {tac.result} = {tac.arg1} {tac.op !== '=' ? tac.op : ''} {tac.arg2}
                     </div>
                   ))}
                 </div>
@@ -589,26 +388,19 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 6: TARGET CODE GENERATION */}
+        {/* TAB 6: ASSEMBLY */}
         {activeTab === 6 && (
-          <div className="flex flex-col gap-4">
-            {/* Register Descriptors */}
-            <div className="rounded-xl border border-slate-800 overflow-hidden">
-              <div className="px-3.5 py-2.5 bg-slate-950/80 border-b border-slate-800">
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Cpu className="h-4 w-4 text-rose-400" />
-                  <span>Virtual Register Bank (R0 - R5) Descriptors:</span>
-                </h4>
+          <div className="flex flex-col gap-3 font-mono text-xs">
+            {/* Register State */}
+            <div className="rounded border border-zinc-800 overflow-hidden">
+              <div className="px-3 py-1.5 bg-zinc-900 border-b border-zinc-800 text-zinc-300 font-semibold text-[11px]">
+                Register Descriptors (R0 - R5)
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-slate-800 bg-slate-950/40 text-center font-mono text-xs">
+              <div className="grid grid-cols-3 sm:grid-cols-6 divide-x divide-zinc-800 bg-zinc-950 text-center">
                 {result.registers.map((r) => (
-                  <div key={r.reg} className="p-2.5">
-                    <span className="text-rose-400 font-bold block">{r.reg}</span>
-                    <span
-                      className={`text-[11px] mt-0.5 block truncate ${
-                        r.value.includes('Empty') ? 'text-slate-500' : 'text-white font-semibold'
-                      }`}
-                    >
+                  <div key={r.reg} className="p-2">
+                    <span className="text-zinc-500 font-bold block">{r.reg}</span>
+                    <span className="text-white block mt-0.5 truncate text-[11px]">
                       {r.value}
                     </span>
                   </div>
@@ -616,12 +408,10 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
               </div>
             </div>
 
-            {/* Assembly Listing */}
-            <div className="rounded-xl border border-slate-800 overflow-hidden">
-              <div className="px-3.5 py-2.5 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between">
-                <h4 className="text-xs font-bold text-white">
-                  Generated 32-bit RISC Assembly Code
-                </h4>
+            {/* Assembly Code Listing */}
+            <div className="rounded border border-zinc-800 overflow-hidden">
+              <div className="px-3 py-2 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between">
+                <span className="text-zinc-300 font-semibold">32-bit RISC Assembly</span>
                 <button
                   onClick={() =>
                     copyText(
@@ -629,38 +419,25 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
                       'asm'
                     )
                   }
-                  className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 transition"
+                  className="px-2 py-1 rounded bg-zinc-950 hover:bg-zinc-800 text-zinc-300 text-[11px] border border-zinc-800"
                 >
-                  {copied === 'asm' ? (
-                    <Check className="h-3 w-3 text-emerald-400" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
-                  <span>Copy Assembly</span>
+                  {copied === 'asm' ? 'Copied' : 'Copy'}
                 </button>
               </div>
-
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-950/90 text-slate-400 font-semibold border-b border-slate-800">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-950 text-zinc-500 border-b border-zinc-800">
                   <tr>
-                    <th className="py-2 px-3 w-12">Line</th>
-                    <th className="py-2 px-3">Instruction</th>
-                    <th className="py-2 px-3">Architectural Action / Explanation</th>
+                    <th className="py-1.5 px-3 w-10">#</th>
+                    <th className="py-1.5 px-3">Instruction</th>
+                    <th className="py-1.5 px-3">Comment</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 bg-slate-950/40">
+                <tbody className="divide-y divide-zinc-800/80 bg-zinc-950">
                   {result.assembly.map((a, idx) => (
-                    <tr
-                      key={idx}
-                      className={`hover:bg-slate-800/40 transition ${
-                        a.instruction.startsWith('.') ? 'bg-slate-900/60 font-bold' : ''
-                      }`}
-                    >
-                      <td className="py-2 px-3 text-slate-600">{a.line}</td>
-                      <td className="py-2 px-3 font-bold text-rose-300">{a.instruction}</td>
-                      <td className="py-2 px-3 text-slate-400 font-sans text-[11px]">
-                        {a.comment}
-                      </td>
+                    <tr key={idx} className="hover:bg-zinc-900/50">
+                      <td className="py-1 px-3 text-zinc-600">{a.line}</td>
+                      <td className="py-1 px-3 text-white font-bold">{a.instruction}</td>
+                      <td className="py-1 px-3 text-zinc-500 text-[11px]">{a.comment}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -669,26 +446,18 @@ export const OutputViewer: React.FC<OutputViewerProps> = ({
           </div>
         )}
 
-        {/* TAB 7: TERMINAL / CONSOLE OUTPUT */}
+        {/* TAB 7: TERMINAL */}
         {activeTab === 7 && (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-medium">
-                Exact C++ console execution log (copy into lab reports):
-              </span>
+          <div className="flex flex-col gap-2 font-mono text-xs">
+            <div className="flex justify-end">
               <button
                 onClick={() => copyText(result.consoleOutput, 'terminal')}
-                className="flex items-center gap-1 px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 transition"
+                className="px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-[11px] border border-zinc-800"
               >
-                {copied === 'terminal' ? (
-                  <Check className="h-3.5 w-3.5 text-emerald-400" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5" />
-                )}
-                <span>Copy Entire Log</span>
+                {copied === 'terminal' ? 'Copied' : 'Copy Log'}
               </button>
             </div>
-            <pre className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-emerald-400 leading-relaxed overflow-x-auto whitespace-pre select-all">
+            <pre className="p-3.5 rounded border border-zinc-800 bg-zinc-950 text-zinc-200 leading-relaxed overflow-x-auto whitespace-pre select-all text-xs">
               {result.consoleOutput}
             </pre>
           </div>
