@@ -1,15 +1,4 @@
 import React from 'react'
-import {
-  FileText,
-  Network,
-  ShieldCheck,
-  Binary,
-  Zap,
-  Cpu,
-  CheckCircle,
-  AlertCircle,
-  ArrowRight,
-} from 'lucide-react'
 import { CompilerResult } from '../compiler/types'
 
 interface StagesPipelineProps {
@@ -24,95 +13,43 @@ export const StagesPipeline: React.FC<StagesPipelineProps> = ({
   onSelectTab,
 }) => {
   const stages = [
-    {
-      id: 1,
-      title: '1. Lexical',
-      subtitle: `${result?.tokens ? result.tokens.length - 1 : 0} Tokens`,
-      icon: FileText,
-      color: 'from-blue-500 to-cyan-500',
-      activeColor: 'border-cyan-500 text-cyan-400',
-    },
-    {
-      id: 2,
-      title: '2. Syntax',
-      subtitle: 'AST Constructed',
-      icon: Network,
-      color: 'from-indigo-500 to-blue-500',
-      activeColor: 'border-indigo-500 text-indigo-400',
-    },
-    {
-      id: 3,
-      title: '3. Semantic',
-      subtitle: `${result?.symbolTable?.length || 0} Symbols`,
-      icon: ShieldCheck,
-      color: 'from-violet-500 to-purple-500',
-      activeColor: 'border-purple-500 text-purple-400',
-    },
-    {
-      id: 4,
-      title: '4. ICG',
-      subtitle: `${result?.rawTAC?.length || 0} TAC`,
-      icon: Binary,
-      color: 'from-amber-500 to-orange-500',
-      activeColor: 'border-amber-500 text-amber-400',
-    },
+    { id: 1, label: '1. Lexer', detail: `${result ? result.tokens.length - 1 : 0} tokens` },
+    { id: 2, label: '2. Parser', detail: 'AST' },
+    { id: 3, label: '3. Semantic', detail: `${result?.symbolTable?.length || 0} symbols` },
+    { id: 4, label: '4. ICG', detail: `${result?.rawTAC?.length || 0} TAC` },
     {
       id: 5,
-      title: '5. Optimizer',
-      subtitle: result?.reductionPercentage
-        ? `-${result.reductionPercentage}%`
-        : 'Passes Applied',
-      icon: Zap,
-      color: 'from-emerald-500 to-teal-500',
-      activeColor: 'border-emerald-500 text-emerald-400',
+      label: '5. Optimizer',
+      detail: result?.reductionPercentage ? `-${result.reductionPercentage}%` : 'passes',
     },
     {
       id: 6,
-      title: '6. Codegen',
-      subtitle: `${result?.assembly?.length || 0} Asm Lines`,
-      icon: Cpu,
-      color: 'from-pink-500 to-rose-500',
-      activeColor: 'border-rose-500 text-rose-400',
+      label: '6. Codegen',
+      detail: `${result?.assembly?.filter((a) => !a.instruction.startsWith('.')).length || 0} asm`,
     },
   ]
 
   return (
-    <div className="w-full overflow-x-auto pb-1">
-      <div className="flex items-center gap-1.5 min-w-[620px]">
+    <div className="w-full flex items-center justify-between overflow-x-auto gap-2 py-2 px-3 rounded-lg border border-zinc-800 bg-zinc-950 text-xs font-mono">
+      <div className="flex items-center gap-2 min-w-[560px] w-full justify-between">
         {stages.map((st, i) => {
-          const Icon = st.icon
           const isSelected = activeTab === st.id
-          const isDone = !!result && result.success
-
           return (
             <React.Fragment key={st.id}>
               <button
                 onClick={() => onSelectTab(st.id)}
-                className={`flex-1 p-2 rounded-xl border text-left transition relative overflow-hidden group ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition ${
                   isSelected
-                    ? `bg-slate-800/90 ${st.activeColor} shadow-md`
-                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200'
+                    ? 'bg-zinc-100 text-zinc-950 font-bold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <div
-                    className={`h-6 w-6 rounded-lg bg-gradient-to-tr ${st.color} flex items-center justify-center text-white shadow-sm`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-                  {isDone ? (
-                    <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                  ) : result && !result.success ? (
-                    <AlertCircle className="h-3.5 w-3.5 text-rose-400" />
-                  ) : null}
-                </div>
-                <div className="text-xs font-semibold truncate text-white">{st.title}</div>
-                <div className="text-[10px] text-slate-500 truncate">{st.subtitle}</div>
+                <span>{st.label}</span>
+                <span className={`text-[10px] ${isSelected ? 'text-zinc-700' : 'text-zinc-500'}`}>
+                  ({st.detail})
+                </span>
               </button>
-
-              {i < stages.length - 1 && (
-                <ArrowRight className="h-3.5 w-3.5 text-slate-700 shrink-0" />
-              )}
+              {i < stages.length - 1 && <span className="text-zinc-700 select-none">→</span>}
             </React.Fragment>
           )
         })}

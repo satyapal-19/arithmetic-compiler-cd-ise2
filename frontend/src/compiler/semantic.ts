@@ -132,30 +132,20 @@ export class SemanticAnalyzer {
         const vName = node.name || ''
         const existing = this.symbolTable.get(vName)
         if (!existing) {
-          this.diagnostics.push({
-            level: 'WARNING',
-            message: `Variable '${vName}' used without explicit prior declaration. Auto-allocating in Symbol Table.`,
-          })
           const entry: SymbolEntry = {
             name: vName,
             dataType: 'int',
             value: 0,
-            isInitialized: false,
+            isInitialized: true,
             memoryOffset: this.currentOffset,
             lineDeclared: 1,
           }
           this.currentOffset += 4
           this.symbolTable.set(vName, entry)
           node.inferredType = 'int'
-          this.analysisLog.push(`Auto-registered undeclared variable '${vName}' as int at Byte ${entry.memoryOffset}.`)
+          this.analysisLog.push(`Registered operand variable '${vName}' as int in Symbol Table (Byte ${entry.memoryOffset}).`)
         } else {
           node.inferredType = existing.dataType
-          if (!existing.isInitialized) {
-            this.diagnostics.push({
-              level: 'WARNING',
-              message: `Variable '${vName}' may be uninitialized.`,
-            })
-          }
           this.analysisLog.push(`Looked up variable '${vName}' in Symbol Table. Type: ${existing.dataType}`)
         }
         break
