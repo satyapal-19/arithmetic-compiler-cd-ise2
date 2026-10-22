@@ -1,0 +1,25 @@
+{
+  "name": "arithmetic-compiler-ise2",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive 6-Stage Arithmetic Compiler and Web Studio for Compiler Design ISE 2",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "install:all": "npm --prefix frontend install"
+  },
+  "keywords": [
+    "compiler-design",
+    "arithmetic-compiler",
+    "three-address-code",
+    "lexer",
+    "parser",
+    "ast",
+    "assembly",
+    "react",
+    "vite"
+  ],
+  "author": "",
+  "license": "MIT"
+}
